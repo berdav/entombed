@@ -29,7 +29,7 @@ You can reconfigure the cellular automata rules using the parameter
 `-R`.  You can refer to the help to get the usage of this parameter.
 For example
 ```bash
-$ ./entombed.py -R  -p
+$ ./entombed.py -R 1,1,1,2,2,2,2,2,1,1,1,1,2,0,0,0,1,1,1,2,2,2,0,0,0,0,1,0,0,0,0 -p
 ```
 Generate the following rules
 

@@ -45,4 +45,4 @@ This work is based on the work
 John Aycock and Tara Copplestone published in 
 The Art, Science, and Engineering of Programming, 2019, Vol. 3, Issue 2, Article 4
 
-You can find the work at ![arxiv](https://arxiv.org/pdf/1811.02035v1)
+You can find the work at [arxiv](https://arxiv.org/pdf/1811.02035v1)

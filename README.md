@@ -6,8 +6,8 @@ Maze generator based on the "misterious" Entombed algorithm.
 ![Example script execution](resources/tool.png)
 
 ## What is it?
-This program could generate different mazes based on the cellular
-automata found in Entombed Atari 2600 Game.
+This program generates different mazes based on the cellular
+automaton found in Entombed Atari 2600 Game.
 
 It could be used to explore different cellular automata generation for
 the mazes.
@@ -25,7 +25,7 @@ generation with `-S`
 
 To get a list of configurations use the switch `-h` or `--help`
 
-You can reconfigure the cellular automata rules using the parameter
+You can reconfigure the cellular automaton rules using the parameter
 `-R`.  You can refer to the help to get the usage of this parameter.
 For example
 ```bash

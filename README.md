@@ -1,6 +1,7 @@
-# Entombed :maze:
+# Entombed 🥴
 
 Who wants to do a Rorschach test? :smile:
+
 Maze generator based on the "misterious" Entombed algorithm.
 ![Example script execution](resources/tool.png)
 

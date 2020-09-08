@@ -35,6 +35,8 @@ columns = 39
 print_rules_opt = False
 no_maze = False
 no_symmetry = False
+# How much rules to print in one row
+rules_blocks = 8
 
 lut = [
         # Selection algorithm
@@ -122,8 +124,7 @@ def lut_to_str(lut):
 def lut_from_str(lutstr):
     return list(map(int, lutstr.split(",")))
 
-def print_rules(rules):
-    blocksize = 8
+def print_rules(rules, blocksize=8):
     cline = "│"
     nline = "│"
     nextline=""
@@ -173,9 +174,10 @@ def print_rules(rules):
                 nextline = "├────"+"┼────"*(blocksize-1)+"┤\n"
     print("└────"+"┴────"*(blocksize-1)+"┘")
 
-optlist, args = getopt.getopt(sys.argv[1::], 'R:hr:c:pMS', [
+optlist, args = getopt.getopt(sys.argv[1::], 'R:hr:c:pMSb:', [
     'help',
     'print-rules',
+    'rules-blocks=',
     'no-maze',
     'no-simmetry',
     'rules=',
@@ -190,6 +192,7 @@ def usage():
     print(" -M --no-maze :     Do not generate maze")
     print(" -h --help:         This help")
     print(" -S --no-symmetry:  Disable maze symmetry")
+    print(" -b --rules-blocks: How much rules to print on a single line".format(rules_blocks))
     print(" -r --rows:         Number of rows to generate, default {}".format(rows))
     print(" -c --columns:      Number of columns to generate, default {}".format(columns))
     print(" -R --rules:        Load different rules for the maze generation")
@@ -213,6 +216,8 @@ for optname,optval in optlist:
     if optname == '-h' or optname == '--help':
         usage()
         sys.exit(0)
+    if optname == '-b' or optname == '--rules-blocks':
+        rules_blocks = int(optval)
     if optname == '-r' or optname == '--rows':
         rows = int(optval)
     if optname == '-c' or optname == '--colums':
@@ -239,4 +244,4 @@ if print_rules_opt:
     print()
     print("Rules")
     print(" ",lut_to_str(lut))
-    print_rules(lut)
+    print_rules(lut, blocksize=rules_blocks)

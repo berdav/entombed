@@ -13,11 +13,14 @@ It could be used to explore different cellular automata generation for
 the mazes.
 
 ## How can I use it?
-To generate a maze simply execute the script:
+
+To generate a maze simply execute the script
+
 ![Simple maze](resources/maze.png)
 
 The script has many configurations, such as disabling of symmetrical
-generation with `-S`:
+generation with `-S`
+
 ![Half maze](resources/halfmaze.png)
 
 To get a list of configurations use the switch `-h` or `--help`
@@ -29,9 +32,11 @@ For example
 $ ./entombed.py -R  -p
 ```
 Generate the following rules
+
 ![Rules](resources/rules.png)
 
 And mazes similar to this one
+
 ![Mazes with custom Rules](resources/maze_rule.png)
 
 ## Thanks

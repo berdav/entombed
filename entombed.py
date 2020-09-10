@@ -98,8 +98,8 @@ def print_row(r, specular=True, truecolors=False, foreground=0x0, background=0x0
         start_color_bg = hex_to_truecolor(background, False)
         reset_color = "\x1b[0m"
 
-    wallitem = "{}█{}".format(start_color_fg, reset_color)
-    nowallitem = "{} {}".format(start_color_bg, reset_color)
+    wallitem = "{}██{}".format(start_color_fg, reset_color)
+    nowallitem = "{}  {}".format(start_color_bg, reset_color)
 
     for item in r:
         if item:

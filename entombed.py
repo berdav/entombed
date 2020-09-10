@@ -312,7 +312,7 @@ for optname,optval in optlist:
     if optname == '-b' or optname == '--rules-blocks':
         rules_blocks = int(optval)
     if optname == '-r' or optname == '--rows':
-        rows = int(optval)
+        rows = int(optval) - 1
     if optname == '-c' or optname == '--colums':
         columns = int(optval)
     if optname == '-M' or optname == '--no-maze':

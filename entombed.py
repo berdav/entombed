@@ -55,6 +55,8 @@ output                  = None
 output_bg               = 0x3f3f3f
 # Default output foreground color
 output_fg               = 0x775577
+# Default output scale when outputting to image
+output_scale            = 10
 
 # Default rules
 lut = [
@@ -252,9 +254,9 @@ def probabilities(rows, cols, start_row = 0, start_col = 0):
     return prob
 
 
-optlist, args = getopt.getopt(sys.argv[1::], 'bB:c:F:hMpPr:R:tSO:', [
+optlist, args = getopt.getopt(sys.argv[1::], 'bB:c:F:hMpPr:R:tsSO:', [
     'rules-blocks=',
-    'colums='
+    'columns='
     'help',
     'no-maze',
     'no-simmetry',
@@ -264,6 +266,7 @@ optlist, args = getopt.getopt(sys.argv[1::], 'bB:c:F:hMpPr:R:tSO:', [
     'rows=',
     'colors=',
     'output=',
+    'output-scale=',
     'output-bg=',
     'output-fg=',
 ])
@@ -279,9 +282,10 @@ def usage():
     print(" -M --no-maze :     Do not generate maze")
     print(" -S --no-symmetry:  Disable maze symmetry")
     print(" -O --output:       Output to an image")
+    print(" -s --output-scale: Output image scale")
     print(" -B --output-bg:    Output background color, default RGB:#{:06x}".format(output_bg))
     print(" -F --output-fg:    Output foreground color, default RGB:#{:06x}".format(output_fg))
-    print(" -t --colors:       colorize the output using truecolors")
+    print(" -t --colors:       Colorize the output using truecolors")
     print(" -c --columns:      Number of columns to generate, default {}".format(columns))
     print(" -r --rows:         Number of rows to generate, default {}".format(rows))
     print(" -R --rules:        Load different rules for the maze generation")
@@ -327,6 +331,8 @@ for optname,optval in optlist:
         output_fg = int(optval,16)
     if optname == '-O' or optname == '--output':
         output = optval
+    if optname == '-s' or optname == '--output-scale':
+        output_scale = int(optval)
 
 if not no_maze:
     initial_state = [randombit() for _ in range(columns)]
@@ -364,8 +370,37 @@ if print_probabilities_opt:
 
 if output != None and saved_maze != None:
     # Place import here to require them only if output is required
-    import PIL
+    from PIL import Image
     import numpy
 
+    print("Saving to {}".format(output))
+
+    fg = ((output_fg&0xff0000)>>16, (output_fg&0xff00)>>8, (output_fg&0xff))
+    bg = ((output_bg&0xff0000)>>16, (output_bg&0xff00)>>8, (output_bg&0xff))
+
+    output_maze = []
+    for row in saved_maze:
+        r = []
+        for el in row:
+            if el:
+                for i in range(output_scale):
+                    r.append(fg)
+            else:
+                for i in range(output_scale):
+                    r.append(bg)
+        for el in row[::-1]:
+            if el:
+                for i in range(output_scale):
+                    r.append(fg)
+            else:
+                for i in range(output_scale):
+                    r.append(bg)
+        for i in range(output_scale):
+            output_maze.append(r)
+
+    npimg = numpy.array(output_maze)
+
+    PIL_img = Image.fromarray(numpy.uint8(npimg)).convert("RGB")
+
+    PIL_img.save(output)
     # Save the image
-    print(saved_maze)

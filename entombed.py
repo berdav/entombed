@@ -45,6 +45,16 @@ no_symmetry             = False
 print_probabilities_opt = False
 # How much rules to print in one row
 rules_blocks            = 8
+# Save the maze to print it to a file
+saved_maze              = None
+# Truecolor
+truecolor               = False
+# Output file
+output                  = None
+# Default output background color
+output_bg               = 0x3f3f3f
+# Default output foreground color
+output_fg               = 0x775577
 
 # Default rules
 lut = [
@@ -65,15 +75,35 @@ lut = [
         RANDOM_CHOICE, NO_WALL,    NO_WALL,       NO_WALL,
 ]
 
+def hex_to_truecolor(c, fg=True):
+    red   = (c&0xff0000) >> 16
+    green = (c&0x00ff00) >> 8
+    blue  = (c&0x0000ff) >> 0
+
+    if fg:
+        return "\x1b[38;2;{};{};{}m".format(red,green,blue)
+    return "\x1b[48;2;{};{};{}m".format(red,green,blue)
+
 def randombit():
     return random.choice([0,1])
 
-def print_row(r, specular=True):
+def print_row(r, specular=True, truecolors=False, foreground=0x0, background=0x0):
+    start_color_fg = ""
+    start_color_bg = ""
+    reset_color = ""
+    if truecolors:
+        start_color_fg = hex_to_truecolor(foreground, True)
+        start_color_bg = hex_to_truecolor(background, False)
+        reset_color = "\x1b[0m"
+
+    wallitem = "{}█{}".format(start_color_fg, reset_color)
+    nowallitem = "{} {}".format(start_color_bg, reset_color)
+
     for item in r:
         if item:
-            print('█', end ='')
+            print(wallitem, end ='')
         else:
-            print(' ', end ='')
+            print(nowallitem, end ='')
     # Create specular labyrinth
     if (not specular):
         print()
@@ -81,9 +111,9 @@ def print_row(r, specular=True):
 
     for item in r[::-1]:
         if item:
-            print('█', end ='')
+            print(wallitem, end ='')
         else:
-            print(' ', end ='')
+            print(nowallitem, end ='')
     print()
 
 def get_idx(a, b, c, d, e):
@@ -222,7 +252,7 @@ def probabilities(rows, cols, start_row = 0, start_col = 0):
     return prob
 
 
-optlist, args = getopt.getopt(sys.argv[1::], 'b:c:hMpPr:R:S', [
+optlist, args = getopt.getopt(sys.argv[1::], 'bB:c:F:hMpPr:R:tSO:', [
     'rules-blocks=',
     'colums='
     'help',
@@ -232,6 +262,10 @@ optlist, args = getopt.getopt(sys.argv[1::], 'b:c:hMpPr:R:S', [
     'print-prob',
     'rules=',
     'rows=',
+    'colors=',
+    'output=',
+    'output-bg=',
+    'output-fg=',
 ])
 
 def usage():
@@ -244,6 +278,10 @@ def usage():
     print(" -P --print-prob:   Print calculated probability")
     print(" -M --no-maze :     Do not generate maze")
     print(" -S --no-symmetry:  Disable maze symmetry")
+    print(" -O --output:       Output to an image")
+    print(" -B --output-bg:    Output background color, default RGB:#{:06x}".format(output_bg))
+    print(" -F --output-fg:    Output foreground color, default RGB:#{:06x}".format(output_fg))
+    print(" -t --colors:       colorize the output using truecolors")
     print(" -c --columns:      Number of columns to generate, default {}".format(columns))
     print(" -r --rows:         Number of rows to generate, default {}".format(rows))
     print(" -R --rules:        Load different rules for the maze generation")
@@ -275,6 +313,8 @@ for optname,optval in optlist:
         columns = int(optval)
     if optname == '-M' or optname == '--no-maze':
         no_maze = True
+    if optname == '-t' or optname == '--colors':
+        truecolor = True
     if optname == '-S' or optname == '--no-symmetry':
         no_symmetry = True
     if optname == '-p' or optname == '--print-rules':
@@ -286,11 +326,20 @@ if not no_maze:
     initial_state = [randombit() for _ in range(columns)]
     current_row = initial_state
 
-    print_row(initial_state, specular = not no_symmetry)
+    print_row(initial_state, specular = not no_symmetry,
+            truecolors=truecolor,
+            background=output_bg, foreground=output_fg)
+    saved_maze = [ initial_state ]
 
     for i in range(rows):
         row = generate_row(current_row)
-        print_row(row, specular = not no_symmetry)
+        print_row(row, specular = not no_symmetry,
+            truecolors=truecolor,
+            background=output_bg, foreground=output_fg)
+        # Save the maze for the output to image
+        if output != None:
+            saved_maze.append(row)
+
         current_row = row
 
 if print_rules_opt:
@@ -307,3 +356,10 @@ if print_probabilities_opt:
             print("{:.3f} ".format(c), end ='')
         print()
 
+if output != None and saved_maze:
+    # Place import here to require them only if output is required
+    import PIL
+    import numpy
+
+    # Save the image
+    print(saved_maze)

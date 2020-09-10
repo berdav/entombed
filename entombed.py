@@ -284,7 +284,9 @@ def usage():
     print(" -O --output:       Output to an image")
     print(" -s --output-scale: Output image scale")
     print(" -B --output-bg:    Output background color, default RGB:#{:06x}".format(output_bg))
+    print("                    set to \"random\" to choose a random color")
     print(" -F --output-fg:    Output foreground color, default RGB:#{:06x}".format(output_fg))
+    print("                    set to \"random\" to choose a random color")
     print(" -t --colors:       Colorize the output using truecolors")
     print(" -c --columns:      Number of columns to generate, default {}".format(columns))
     print(" -r --rows:         Number of rows to generate, default {}".format(rows))
@@ -326,9 +328,15 @@ for optname,optval in optlist:
     if optname == '-P' or optname == '--print-prob':
         print_probabilities_opt = True
     if optname == '-B' or optname == '--output-bg':
-        output_bg = int(optval,16)
+        if optval == "random":
+            output_bg = random.randint(0, 0xffffff)
+        else:
+            output_bg = int(optval,16)
     if optname == '-F' or optname == '--output-fg':
-        output_fg = int(optval,16)
+        if optval == "random":
+            output_fg = random.randint(0, 0xffffff)
+        else:
+            output_fg = int(optval,16)
     if optname == '-O' or optname == '--output':
         output = optval
     if optname == '-s' or optname == '--output-scale':

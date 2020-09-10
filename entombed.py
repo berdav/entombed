@@ -24,6 +24,7 @@ import sys
 import random
 import getopt
 import itertools
+
 from functools import reduce
 
 NO_WALL       = 0
@@ -31,16 +32,21 @@ WALL          = 1
 RANDOM_CHOICE = 2
 
 # Default row value
-rows = 25
+rows                    = 25
 # Default column value
-columns = 39
-print_rules_opt = False
-no_maze = False
-no_symmetry = False
+columns                 = 39
+# Do not print rules by default
+print_rules_opt         = False
+# Print maze by default
+no_maze                 = False
+# Print a symmetrical maze
+no_symmetry             = False
+# Do not print probabilities by default
 print_probabilities_opt = False
 # How much rules to print in one row
-rules_blocks = 8
+rules_blocks            = 8
 
+# Default rules
 lut = [
         # Selection algorithm
         #    _ _ _
@@ -216,29 +222,30 @@ def probabilities(rows, cols, start_row = 0, start_col = 0):
     return prob
 
 
-optlist, args = getopt.getopt(sys.argv[1::], 'R:hr:c:pPMSb:', [
-    'help',
-    'print-rules',
-    'print-prob',
+optlist, args = getopt.getopt(sys.argv[1::], 'b:c:hMpPr:R:S', [
     'rules-blocks=',
+    'colums='
+    'help',
     'no-maze',
     'no-simmetry',
+    'print-rules',
+    'print-prob',
     'rules=',
     'rows=',
-    'colums='])
+])
 
 def usage():
     print("Open Entombed")
     print("Generate maze with entombed algorithm")
     print("options:")
+    print(" -b --rules-blocks: How much rules to print on a single line".format(rules_blocks))
+    print(" -h --help:         This help")
     print(" -p --print-rules:  Print rules in pretty format")
     print(" -P --print-prob:   Print calculated probability")
     print(" -M --no-maze :     Do not generate maze")
-    print(" -h --help:         This help")
     print(" -S --no-symmetry:  Disable maze symmetry")
-    print(" -b --rules-blocks: How much rules to print on a single line".format(rules_blocks))
-    print(" -r --rows:         Number of rows to generate, default {}".format(rows))
     print(" -c --columns:      Number of columns to generate, default {}".format(columns))
+    print(" -r --rows:         Number of rows to generate, default {}".format(rows))
     print(" -R --rules:        Load different rules for the maze generation")
     print("                    The rules should be an array of 32 items:")
     print("                    {} -> No wall".format(NO_WALL))

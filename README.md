@@ -39,6 +39,18 @@ And mazes similar to this one
 
 ![Mazes with custom Rules](resources/maze_rule.png)
 
+## Generate avatars
+The script can generate custom avatars, simply use the `--output` flag
+choose colors and size, similarly to the following example:
+
+```bash
+$ ./entombed.py -c 5 -r 10 -t -F 0xfff00c --output-scale 30 --output /tmp/lol.png
+```
+
+The command will generate a 300x300 png image similar to this one:
+
+![Avatar](resources/avatar.png)
+
 ## Thanks
 This work is based on the work
 "Entombed: An archaeological examination of an Atari 2600 game" by

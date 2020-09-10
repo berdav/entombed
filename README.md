@@ -51,6 +51,9 @@ The command will generate a 300x300 png image similar to this one:
 
 ![Avatar](resources/avatar.png)
 
+In which you can see a lot of things, depending on your ego and, well,
+I'm not a Psychologist.
+
 ## Thanks
 This work is based on the work
 "Entombed: An archaeological examination of an Atari 2600 game" by

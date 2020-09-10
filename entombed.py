@@ -321,6 +321,12 @@ for optname,optval in optlist:
         print_rules_opt = True
     if optname == '-P' or optname == '--print-prob':
         print_probabilities_opt = True
+    if optname == '-B' or optname == '--output-bg':
+        output_bg = int(optval,16)
+    if optname == '-F' or optname == '--output-fg':
+        output_fg = int(optval,16)
+    if optname == '-O' or optname == '--output':
+        output = optval
 
 if not no_maze:
     initial_state = [randombit() for _ in range(columns)]
@@ -356,7 +362,7 @@ if print_probabilities_opt:
             print("{:.3f} ".format(c), end ='')
         print()
 
-if output != None and saved_maze:
+if output != None and saved_maze != None:
     # Place import here to require them only if output is required
     import PIL
     import numpy

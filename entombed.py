@@ -23,6 +23,8 @@
 import sys
 import random
 import getopt
+import itertools
+from functools import reduce
 
 NO_WALL       = 0
 WALL          = 1
@@ -35,6 +37,7 @@ columns = 39
 print_rules_opt = False
 no_maze = False
 no_symmetry = False
+print_probabilities_opt = False
 # How much rules to print in one row
 rules_blocks = 8
 
@@ -174,9 +177,49 @@ def print_rules(rules, blocksize=8):
                 nextline = "├────"+"┼────"*(blocksize-1)+"┤\n"
     print("└────"+"┴────"*(blocksize-1)+"┘")
 
-optlist, args = getopt.getopt(sys.argv[1::], 'R:hr:c:pMSb:', [
+def probselect(V, cell):
+    # Probability to have a 1 in A
+    if V:
+        return cell
+    return 1 - cell
+
+def probabilities(rows, cols, start_row = 0, start_col = 0):
+    # Matrix of probabilities
+    prob = [ [0, 0]+ [ 0 for c in range(cols) ] + [0,0] for _ in range(rows + 1)]
+    for k in range(len(prob[0]) - 2):
+        prob[0][k + 2] = .5
+    scan = 0 + 2
+
+    for r in range(start_row + 1, rows + 1):
+        for c in range(start_col + 2, cols + 2):
+            psum = 0
+
+            # Calculate conditioned probabilities
+            for A,B,C,D,E in itertools.product([0,1], repeat=5):
+                probabilities = [
+                    probselect(A, prob[r][c-2]),
+                    probselect(B, prob[r][c-1]),
+                    probselect(C, prob[r-1][c-1]),
+                    probselect(D, prob[r-1][c]),
+                    probselect(E, prob[r-1][c+1])
+                ]
+
+                p = reduce(lambda x,y: x*y, probabilities)
+
+                idx = (A << 0) | (B << 1) | (C << 2) | (D << 3) | (E << 4)
+                if (lut[idx] == RANDOM_CHOICE):
+                    psum += (.5 * p)
+                else:
+                    psum += (lut[idx] * p)
+            prob[r][c]=psum
+
+    return prob
+
+
+optlist, args = getopt.getopt(sys.argv[1::], 'R:hr:c:pPMSb:', [
     'help',
     'print-rules',
+    'print-prob',
     'rules-blocks=',
     'no-maze',
     'no-simmetry',
@@ -188,7 +231,8 @@ def usage():
     print("Open Entombed")
     print("Generate maze with entombed algorithm")
     print("options:")
-    print(" -p --print-rules : Print rules in pretty format")
+    print(" -p --print-rules:  Print rules in pretty format")
+    print(" -P --print-prob:   Print calculated probability")
     print(" -M --no-maze :     Do not generate maze")
     print(" -h --help:         This help")
     print(" -S --no-symmetry:  Disable maze symmetry")
@@ -228,6 +272,8 @@ for optname,optval in optlist:
         no_symmetry = True
     if optname == '-p' or optname == '--print-rules':
         print_rules_opt = True
+    if optname == '-P' or optname == '--print-prob':
+        print_probabilities_opt = True
 
 if not no_maze:
     initial_state = [randombit() for _ in range(columns)]
@@ -245,3 +291,12 @@ if print_rules_opt:
     print("Rules")
     print(" ",lut_to_str(lut))
     print_rules(lut, blocksize=rules_blocks)
+
+if print_probabilities_opt:
+    print()
+    print("Probabilities")
+    for r in probabilities(rows, columns)[1::]:
+        for c in r[2:-2]:
+            print("{:.3f} ".format(c), end ='')
+        print()
+

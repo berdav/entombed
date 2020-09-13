@@ -27,6 +27,84 @@ import itertools
 
 from functools import reduce
 
+# Options parsing classes
+class Option(object):
+    def __init__(self, s, l, desc, callback, takes_argument):
+        self.s = s
+        self.l = l
+        self.desc = desc
+        self.callback = callback
+        self.takes_argument = takes_argument
+    def get_short(self):
+        return self.s
+    def get_long(self):
+        return self.l
+    def get_desc(self):
+        return self.desc
+    def get_arg(self):
+        return self.arg
+    def get_takes_argument(self):
+        return self.takes_argument
+    def execute(self, arg):
+        return self.callback(arg)
+
+
+class Options(object):
+    def __init__(self):
+        self.options = {}
+        self.results = {}
+        return
+
+    # Print usage
+    def usage(self):
+        print(self.usage_title)
+        if (len(self.options) > 0):
+            print("options:")
+        for option in self.options:
+            if (len(option) > 1 and option[-1] != ':'):
+                continue
+
+            option = self.options[option]
+            print(" -{:2s} --{:20s} ".format(option.get_short(),
+                                       option.get_long()), end='')
+            firstline = option.get_desc().split('\n')[0]
+            print(firstline)
+            try:
+                for line in option.get_desc().split('\n')[1::]:
+                    print(" "*28 + line)
+            except:
+                pass
+
+    def add_opts(self, s, l, desc, callback=None, takes_argument=False):
+        rs = s
+        rl = l
+        if (takes_argument):
+            rs += ":"
+            rl += "="
+        opt = Option(rs, rl, desc, callback, takes_argument)
+        self.options[s] = opt
+        self.options[l] = opt
+
+    def set_title(self, title):
+        self.usage_title = title
+
+    def getopt(self, args):
+        sopts = ''.join((map(lambda x: x.get_short(), self.options.values())))
+        lopts = list(map(lambda x: x.get_long(), self.options.values()))
+
+        optlist, args = getopt.getopt(args, sopts, lopts)
+        for optname, optval in optlist:
+            opt = self.options[optname[1::]]
+            result_key = opt.get_long().split('=')[0]
+            self.results[result_key] = self.options[optname[1::]].execute(optval)
+        return args
+
+    # Get result of an option set
+    def get(self, key, default=None):
+        print(self.results, key)
+        return self.results.get(key, default)
+
+
 NO_WALL       = 0
 WALL          = 1
 RANDOM_CHOICE = 2
@@ -253,94 +331,85 @@ def probabilities(rows, cols, start_row = 0, start_col = 0):
 
     return prob
 
+# Option parser, argparse like
+opt = Options()
 
-optlist, args = getopt.getopt(sys.argv[1::], 'bB:c:F:hMpPr:R:tsSO:', [
-    'rules-blocks=',
-    'columns='
-    'help',
-    'no-maze',
-    'no-simmetry',
-    'print-rules',
-    'print-prob',
-    'rules=',
-    'rows=',
-    'colors=',
-    'output=',
-    'output-scale=',
-    'output-bg=',
-    'output-fg=',
-])
+opt.set_title("Entombed\nGenerate Mazes with Entombed algorithm")
+opt.add_opts("h", "help", "This help",
+        callback=lambda _: (opt.usage(),exit(0)))
+opt.add_opts("b", "rules-block",
+    "How much rules to print on a single line".format(rules_blocks),
+    callback = lambda x: int(x),
+    takes_argument=True)
+opt.add_opts("p", "print-rules", "Print rules in pretty format",
+    callback = lambda _: True)
+opt.add_opts("B", "output-bg",
+    "Output background color, default RGB:#{:06x}\n".format(output_bg) +
+    "set to \"random\" to choose a random color",
+    callback = lambda x:
+        random.randint(0,0xffffff) if (x == "random") else int(x,16),
+    takes_argument=True)
+opt.add_opts("F", "output-fg",
+    "Output foreground color, default RGB:#{:06x}\n".format(output_fg) +
+    "set to \"random\" to choose a random color",
+    callback = lambda x:
+        random.randint(0,0xffffff) if (x == "random") else int(x,16),
+    takes_argument=True)
+opt.add_opts("P", "print-prob", "Print calculated probability",
+    callback = lambda x: True)
+opt.add_opts("M", "no-maze", "Do not generate maze",
+    callback = lambda x: True)
+opt.add_opts("S", "no-symmetry", "Disable maze symmetry",
+    callback = lambda x: True)
+opt.add_opts("O", "output", "Output to an image",
+    takes_argument=True,
+    callback = lambda x: x)
+opt.add_opts("s", "output-scale", "Output image scale",
+    takes_argument=True,
+    callback = lambda x: int(x))
+opt.add_opts("t", "colors", "Colorize the output using truecolors",
+    callback = lambda _: True)
+opt.add_opts("c", "columns",
+    "Number of columns to generate, default:{}".format(columns),
+    callback = lambda x: int(x),
+    takes_argument=True)
+opt.add_opts("r", "rows",
+    "Number of rows to generate, default: {}".format(rows),
+    callback = lambda x: int(x),
+    takes_argument=True)
+opt.add_opts("R", "rules",
+    "Load different rules for the maze generation\n" +
+    "The rules should be an array of 32 items:\n"    +
+    "{} -> No wall\n".format(NO_WALL)                +
+    "{} -> Wall\n".format(WALL)                     +
+    "{} -> Random value".format(RANDOM_CHOICE)      +
+    "    ┌───┬───┬───┐\n"                            +
+    "    │ c │ d │ e │\n"                            +
+    "┌───┼───┼───┼───┘\n"                            +
+    "│ a │ b │ V │    \n"                            +
+    "└───┴───┴───┘    \n"                            +
+    "with V as the resultant value\n"                +
+    "          edcba bits      ecdba           ecdba           ecdba\n"+
+    "value_for_00000,value_for_00001,value_for_00010,value_for_00011,...\n"+
+    "default value is {}".format(lut_to_str(lut)),
+    takes_argument=True,
+    callback = lambda x: lut_from_str(x))
 
-def usage():
-    print("Open Entombed")
-    print("Generate maze with entombed algorithm")
-    print("options:")
-    print(" -b --rules-blocks: How much rules to print on a single line".format(rules_blocks))
-    print(" -h --help:         This help")
-    print(" -p --print-rules:  Print rules in pretty format")
-    print(" -P --print-prob:   Print calculated probability")
-    print(" -M --no-maze :     Do not generate maze")
-    print(" -S --no-symmetry:  Disable maze symmetry")
-    print(" -O --output:       Output to an image")
-    print(" -s --output-scale: Output image scale")
-    print(" -B --output-bg:    Output background color, default RGB:#{:06x}".format(output_bg))
-    print("                    set to \"random\" to choose a random color")
-    print(" -F --output-fg:    Output foreground color, default RGB:#{:06x}".format(output_fg))
-    print("                    set to \"random\" to choose a random color")
-    print(" -t --colors:       Colorize the output using truecolors")
-    print(" -c --columns:      Number of columns to generate, default {}".format(columns))
-    print(" -r --rows:         Number of rows to generate, default {}".format(rows))
-    print(" -R --rules:        Load different rules for the maze generation")
-    print("                    The rules should be an array of 32 items:")
-    print("                    {} -> No wall".format(NO_WALL))
-    print("                    {} -> Wall".format(WALL))
-    print("                    {} -> Random value".format(RANDOM_CHOICE))
-    print("                        ┌───┬───┬───┐")
-    print("                        │ c │ d │ e │")
-    print("                    ┌───┼───┼───┼───┘")
-    print("                    │ a │ b │ V │    ")
-    print("                    └───┴───┴───┘    ")
-    print("                    with V as the resultant value")
-    print("                                edcba bits       ecdba            ecdba            ecdba")
-    print("                    value_for_00000,value_for_00001,value_for_00010,value_for_00011,...");
-    print("                    default value is {}".format(lut_to_str(lut)))
+args = opt.getopt(sys.argv[1::])
 
-for optname,optval in optlist:
-    if optname == '-R' or optname == '--rules':
-        lut = lut_from_str(optval)
-    if optname == '-h' or optname == '--help':
-        usage()
-        sys.exit(0)
-    if optname == '-b' or optname == '--rules-blocks':
-        rules_blocks = int(optval)
-    if optname == '-r' or optname == '--rows':
-        rows = int(optval) - 1
-    if optname == '-c' or optname == '--colums':
-        columns = int(optval)
-    if optname == '-M' or optname == '--no-maze':
-        no_maze = True
-    if optname == '-t' or optname == '--colors':
-        truecolor = True
-    if optname == '-S' or optname == '--no-symmetry':
-        no_symmetry = True
-    if optname == '-p' or optname == '--print-rules':
-        print_rules_opt = True
-    if optname == '-P' or optname == '--print-prob':
-        print_probabilities_opt = True
-    if optname == '-B' or optname == '--output-bg':
-        if optval == "random":
-            output_bg = random.randint(0, 0xffffff)
-        else:
-            output_bg = int(optval,16)
-    if optname == '-F' or optname == '--output-fg':
-        if optval == "random":
-            output_fg = random.randint(0, 0xffffff)
-        else:
-            output_fg = int(optval,16)
-    if optname == '-O' or optname == '--output':
-        output = optval
-    if optname == '-s' or optname == '--output-scale':
-        output_scale = int(optval)
+print_rules_opt         = opt.get('print-rules', default=print_rules_opt)
+rules_blocks            = opt.get('rules-block', default=rules_blocks)
+output_bg               = opt.get('output-bg',   default=output_bg)
+output_fg               = opt.get('output-fg',   default=output_fg)
+rows                    = opt.get('rows',        default=rows)
+columns                 = opt.get('columns',     default=columns)
+truecolor               = opt.get('colors',      default=truecolor)
+print_probabilities_opt = opt.get('print-prob',  default=print_probabilities_opt)
+no_maze                 = opt.get('no-maze',     default=no_maze)
+no_symmetry             = opt.get('no-symmetry', default=no_symmetry)
+output_scale            = opt.get('output-scale',default=output_scale)
+output                  = opt.get('output',      default=output)
+lut                     = opt.get('rules',       default=lut)
 
 if not no_maze:
     initial_state = [randombit() for _ in range(columns)]

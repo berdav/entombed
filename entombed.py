@@ -101,7 +101,6 @@ class Options(object):
 
     # Get result of an option set
     def get(self, key, default=None):
-        print(self.results, key)
         return self.results.get(key, default)
 
 

@@ -94,9 +94,14 @@ class Options(object):
 
         optlist, args = getopt.getopt(args, sopts, lopts)
         for optname, optval in optlist:
-            opt = self.options[optname[1::]]
-            result_key = opt.get_long().split('=')[0]
-            self.results[result_key] = self.options[optname[1::]].execute(optval)
+            if (optname[1] != "-"):
+                optname = optname[1::]
+                opt = self.options[optname]
+                result_key = opt.get_long().split('=')[0]
+            else:
+                optname = optname[2::]
+                result_key = optname
+            self.results[result_key] = self.options[optname].execute(optval)
         return args
 
     # Get result of an option set

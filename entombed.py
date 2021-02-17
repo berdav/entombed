@@ -386,7 +386,7 @@ opt.add_opts("R", "rules",
     "The rules should be an array of 32 items:\n"    +
     "{} -> No wall\n".format(NO_WALL)                +
     "{} -> Wall\n".format(WALL)                     +
-    "{} -> Random value".format(RANDOM_CHOICE)      +
+    "{} -> Random value\n".format(RANDOM_CHOICE)      +
     "    ┌───┬───┬───┐\n"                            +
     "    │ c │ d │ e │\n"                            +
     "┌───┼───┼───┼───┘\n"                            +
